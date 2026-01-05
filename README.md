@@ -37,8 +37,7 @@ The project workflow is divided into the following stages:
    The system also supports fully automatic operation using `maze_generator.py`.  
    Users can generate random mazes of arbitrary size with optional loops, and immediately solve them with BFS, DFS, or A*, all without manually drawing the maze.  
    <img width="669" height="687" alt="Random Maze Generation and Solver" src="https://github.com/user-attachments/assets/44554b89-1770-4ed7-998b-846ecef91842" />
-" />
-<img width="666" height="679" alt="Random Maze Generation and Solver" src="https://github.com/user-attachments/assets/200b3fc1-b1fc-4afc-b28c-59ffbceeaa53" />
+   <img width="666" height="679" alt="Random Maze Generation and Solver" src="https://github.com/user-attachments/assets/200b3fc1-b1fc-4afc-b28c-59ffbceeaa53" />
 
 
         
