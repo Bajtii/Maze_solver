@@ -1,4 +1,3 @@
-
 import argparse
 import os
 import sys
@@ -10,47 +9,40 @@ from viz import plot_maze, animate_maze
 
 FROM_FILE_PATH: str = r""
 
-
 def parse_size(size_str: str):
-    """Parse '31x31' -> (31, 31). Validates positive integers."""
+    """
+    Parsuje np. '31x31' -> (31, 31). Waliduje dodatnie liczby całkowite.
+    """
     parts = size_str.lower().split('x')
     if len(parts) != 2:
-        raise ValueError("Size must be in WxH format, e.g., 31x31")
+        raise ValueError("Rozmiar powinien być w formacie WxH, np. 31x31")
     w = int(parts[0]); h = int(parts[1])
     if w <= 0 or h <= 0:
-        raise ValueError("Width and height must be positive.")
+        raise ValueError("Rozmiary muszą być dodatnie.")
     return w, h
 
-
 def load_maze(args):
-    """
-    Returns (grid, start, end) and a source description.
-    Priority:
-      1) --from-file <path>
-      2) FROM_FILE_PATH (if non-empty and exists)
-      3) --use-created (created_maze.txt in CWD)
-      4) random generator (size/seed/loops)
-    """
+
     # 1) CLI: --from-file
     if args.from_file:
         path = args.from_file
         if not os.path.exists(path):
-            raise FileNotFoundError(f"File not found: {path}")
+            raise FileNotFoundError(f"Nie znaleziono pliku: {path}")
         grid, start, end = from_ascii_file(path)
         source = f"ASCII: {os.path.abspath(path)}"
         return grid, start, end, source
 
-    # 2) Constant FROM_FILE_PATH (may be empty)
+    # 2) Stała FROM_FILE_PATH (może być pusty string)
     if isinstance(FROM_FILE_PATH, str) and FROM_FILE_PATH.strip():
         path = FROM_FILE_PATH.strip()
         if not os.path.exists(path):
-            print(f"[WARN] FROM_FILE_PATH points to a non-existent file: {path}. Continuing...")
+            print(f"[WARN] FROM_FILE_PATH wskazuje na nieistniejący plik: {path}. Przechodzę dalej...")
         else:
             grid, start, end = from_ascii_file(path)
             source = f"ASCII: {os.path.abspath(path)}"
             return grid, start, end, source
 
-    # 3) Shortcut: --use-created (look for 'created_maze.txt' in current directory)
+    # 3) Skrót: --use-created (szukamy 'created_maze.txt' w bieżącym katalogu)
     if args.use_created:
         default_path = os.path.join(os.getcwd(), "created_maze.txt")
         if os.path.exists(default_path):
@@ -58,9 +50,9 @@ def load_maze(args):
             source = f"ASCII: {os.path.abspath(default_path)}"
             return grid, start, end, source
         else:
-            print(f"[INFO] --use-created given, but {default_path} does not exist. Falling back to generator.")
+            print(f"[INFO] --use-created podane, ale {default_path} nie istnieje. Przechodzę na generator.")
 
-    # 4) Fallback: random generator
+    # 4) Fallback: generator losowy
     w, h = parse_size(args.size)
     grid, start, end = random_perfect_maze(width=w, height=h, seed=args.seed)
     if args.loops > 0.0:
@@ -68,81 +60,84 @@ def load_maze(args):
     source = f"Generator {w}x{h}, loops={args.loops}, seed={args.seed}"
     return grid, start, end, source
 
-
 def pick_algorithm(name, grid, start, end):
-    """Pick and run an algorithm. Returns visited_order, parents, path, title."""
+    """
+    Wybór algorytmu i uruchomienie. Zwraca visited_order, parents, path, title.
+    """
     if name == "bfs":
         visited_order, parents, path = bfs(grid, start, end)
-        title = "BFS: exploration and shortest path"
+        title = "BFS: eksploracja i najkrótsza ścieżka"
     elif name == "dfs":
         visited_order, parents, path = dfs(grid, start, end)
-        title = "DFS: exploration (not always shortest)"
+        title = "DFS: eksploracja (nie zawsze najkrótsza)"
     elif name == "astar":
         visited_order, parents, path = astar(grid, start, end)
-        title = "A*: exploration and shortest path"
+        title = "A*: eksploracja i najkrótsza ścieżka"
     else:
-        raise ValueError(f"Unknown algorithm: {name}")
+        raise ValueError(f"Nieznany algorytm: {name}")
     return visited_order, parents, path, title
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Maze solving with animation/preview")
+    parser = argparse.ArgumentParser(description="Rozwiązywanie labiryntu z animacją / podglądem")
     parser.add_argument("--algo", choices=["bfs", "dfs", "astar"], default="bfs",
-                        help="Algorithm to use")
+                        help="Wybór algorytmu")
     parser.add_argument("--size", type=str, default="21x21",
-                        help="Generator size, e.g., 21x21 (odd sizes recommended)")
+                        help="Rozmiar generatora, np. 21x21 (zalecane nieparzyste)")
     parser.add_argument("--seed", type=int, default=None,
-                        help="Random seed for reproducibility")
+                        help="Losowe ziarno (reprodukowalność)")
     parser.add_argument("--loops", type=float, default=0.0,
-                        help="Probability of adding loops (0.0–0.2)")
+                        help="Prawdopodobieństwo dodania pętli (0.0–0.2)")
     parser.add_argument("--from-file", type=str, default=None,
-                        help="Path to ASCII maze file (S/E/#/.)")
+                        help="Ścieżka do pliku ASCII z labiryntem (S/E/#/.)")
     parser.add_argument("--use-created", action="store_true",
-                        help="Use 'created_maze.txt' from current directory if it exists")
+                        help="Użyj pliku 'created_maze.txt' z bieżącego katalogu, jeśli istnieje")
     parser.add_argument("--delay", type=float, default=0.02,
-                        help="Animation delay in seconds")
+                        help="Opóźnienie animacji (sekundy)")
     parser.add_argument("--show-alt", action="store_true",
-                        help="Find several alternative DFS paths and pick the shortest")
+                        help="Znajdź kilka alternatywnych ścieżek DFS i wybierz najkrótszą")
     parser.add_argument("--k", type=int, default=5,
-                        help="How many alternative paths to search with DFS (used with --show-alt)")
+                        help="Ile alternatywnych ścieżek szukać DFS-em (gdy --show-alt)")
     parser.add_argument("--no-anim", dest="no_anim", action="store_true",
-                        help="Disable animation, show static plot")
+                        help="Bez animacji, pokaz statyczny")
     args = parser.parse_args()
 
+    # Wczytaj/generuj labirynt
     try:
         grid, start, end, source = load_maze(args)
-        print(f"[INFO] Maze source -> {source}")
+        print(f"[INFO] Źródło labiryntu -> {source}")
     except Exception as e:
-        print(f"[ERROR] Failed to get maze: {e}")
+        print(f"[BŁĄD] Nie udało się uzyskać labiryntu: {e}")
         sys.exit(1)
 
+    # Uruchom wybrany algorytm
     visited_order, parents, path, title = pick_algorithm(args.algo, grid, start, end)
 
+    # Opcjonalnie: alternatywne ścieżki i wybór najkrótszej
     if args.show_alt:
         alt_paths = find_k_paths_dfs(grid, start, end, k=args.k)
         if alt_paths:
             best_alt = min(alt_paths, key=len)
-            print(f"[INFO] DFS alternatives: {len(alt_paths)}. Shortest length: {len(best_alt)}.")
+            print(f"[INFO] Alternatywy DFS: {len(alt_paths)}. Najkrótsza ma długość {len(best_alt)}.")
             if args.no_anim:
                 plot_maze(grid, start, end, path=best_alt, visited=visited_order,
-                          title=title + " + shortest alternative")
+                          title=title + " + najkrótsza alternatywa")
             else:
                 animate_maze(grid, start, end, visited_order, best_alt,
-                             title=title + " + shortest alternative selected", delay=args.delay)
+                             title=title + " + wybór najkrótszej alternatywy", delay=args.delay)
             return
         else:
-            print("[INFO] No alternative DFS paths found (or limit reached).")
+            print("[INFO] Nie znaleziono alternatywnych ścieżek DFS (lub osiągnięto limit).")
 
+    # Standardowe wyjście (dla wybranego algorytmu)
     if path:
-        print(f"Path length: {len(path)}")
+        print(f"Długość ścieżki: {len(path)}")
     else:
-        print("No path (goal unreachable).")
+        print("Brak ścieżki (meta nieosiągalna).")
 
     if args.no_anim:
         plot_maze(grid, start, end, path=path, visited=visited_order, title=title)
     else:
         animate_maze(grid, start, end, visited_order, path, title=title, delay=args.delay)
-
 
 if __name__ == "__main__":
     main()
