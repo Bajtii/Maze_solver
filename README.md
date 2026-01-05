@@ -21,8 +21,7 @@ The project workflow is divided into the following stages:
 
 3. **Solver execution phase:**  
    The maze is loaded into the solver, where one of the supported algorithms (BFS, DFS, or A*) is selected via command-line arguments or directly from the GUI.  
-   alt="Solver CLI Execution showing maze loading and path length" <img width="758" height="73" src="https://github.com/user-attachments/assets/fbf1fe8c-2af3-44d9-abcb-7f3eea1c5721" />
- />
+ <img width="758" height="73" alt="Solver CLI Execution showing maze loading and path length" src="https://github.com/user-attachments/assets/fbf1fe8c-2af3-44d9-abcb-7f3eea1c5721" />
  />
 
 4. **Exploration phase:**  
@@ -33,7 +32,16 @@ The project workflow is divided into the following stages:
 5. **Final path visualization:**  
    Once the goal is reached, the final path from start to end is reconstructed and displayed, clearly distinguishing it from explored areas.  
    <img width="977" height="954" alt="Final Path Visualization" src="https://github.com/user-attachments/assets/5d098631-9257-456c-9010-60269a32f1d1" />
+   
+6. **Automatic maze generation and solving:**  
+   The system also supports fully automatic operation using `maze_generator.py`.  
+   Users can generate random mazes of arbitrary size with optional loops, and immediately solve them with BFS, DFS, or A*, all without manually drawing the maze.  
+   <img width="669" height="687" alt="Random Maze Generation and Solver" src="https://github.com/user-attachments/assets/44554b89-1770-4ed7-998b-846ecef91842" />
+" />
+<img width="666" height="679" alt="Random Maze Generation and Solver" src="https://github.com/user-attachments/assets/200b3fc1-b1fc-4afc-b28c-59ffbceeaa53" />
 
+
+        
 The project is implemented entirely in **Python**, combining GUI programming, algorithmic problem solving, and data visualization into a single coherent system.
 
 ---
